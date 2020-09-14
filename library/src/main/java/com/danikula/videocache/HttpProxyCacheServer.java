@@ -2,6 +2,9 @@ package com.danikula.videocache;
 
 import android.content.Context;
 import android.net.Uri;
+import android.text.TextUtils;
+import android.util.Log;
+import android.webkit.URLUtil;
 
 import com.danikula.videocache.file.DiskUsage;
 import com.danikula.videocache.file.FileNameGenerator;
@@ -100,7 +103,11 @@ public class HttpProxyCacheServer {
      * @return a wrapped by proxy url if file is not fully cached or url pointed to cache file otherwise.
      */
     public String getProxyUrl(String url) {
-        return getProxyUrl(url, true);
+        return getProxyUrl(url, "");
+    }
+
+    public String getProxyUrl(String url, String externalPathToFind) {
+        return getProxyUrl(url, externalPathToFind, true);
     }
 
     /**
@@ -114,8 +121,12 @@ public class HttpProxyCacheServer {
      * @return a wrapped by proxy url if file is not fully cached or url pointed to cache file otherwise (if {@code allowCachedFileUri} is {@code true}).
      */
     public String getProxyUrl(String url, boolean allowCachedFileUri) {
-        if (allowCachedFileUri && isCached(url)) {
-            File cacheFile = getCacheFile(url);
+        return getProxyUrl(url, "", allowCachedFileUri);
+    }
+
+    public String getProxyUrl(String url, String externalPathToFind, boolean allowCachedFileUri) {
+        if (allowCachedFileUri && isCached(url, externalPathToFind)) {
+            File cacheFile = getCacheFile(url, externalPathToFind);
             touchFileSafely(cacheFile);
             return Uri.fromFile(cacheFile).toString();
         }
@@ -160,8 +171,12 @@ public class HttpProxyCacheServer {
      * @return {@code true} if cache contains fully cached file for passed in parameters url.
      */
     public boolean isCached(String url) {
+        return isCached(url, "");
+    }
+
+    public boolean isCached(String url, String externalPathToFind) {
         checkNotNull(url, "Url can't be null!");
-        return getCacheFile(url).exists();
+        return getCacheFile(url, externalPathToFind).exists();
     }
 
     public void shutdown() {
@@ -189,13 +204,25 @@ public class HttpProxyCacheServer {
         return String.format(Locale.US, "http://%s:%d/%s", PROXY_HOST, port, ProxyCacheUtils.encode(url));
     }
 
-    private File getCacheFile(String url) {
+    public File getCacheFile(String url) {
+        return getCacheFile(url, "");
+    }
+
+    public File getCacheFile(String url, String externalPathToFind) {
+        if (!TextUtils.isEmpty(externalPathToFind)) {
+            String suggestedFilename = URLUtil.guessFileName(url, null, null);
+            File file = new File(externalPathToFind, suggestedFilename);
+            if (file.exists()) {
+                if (BuildConfig.DEBUG) Log.d("Cache file", "found in " + externalPathToFind);
+                return file;
+            }
+        }
         File cacheDir = config.cacheRoot;
         String fileName = config.fileNameGenerator.generate(url);
         return new File(cacheDir, fileName);
     }
 
-    private void touchFileSafely(File cacheFile) {
+    public void touchFileSafely(File cacheFile) {
         try {
             config.diskUsage.touch(cacheFile);
         } catch (IOException e) {
