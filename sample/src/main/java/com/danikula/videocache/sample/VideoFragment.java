@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.VideoView;
 
 import com.danikula.videocache.CacheListener;
@@ -24,11 +25,15 @@ public class VideoFragment extends Fragment implements CacheListener {
 
     private static final String LOG_TAG = "VideoFragment";
 
-    @FragmentArg String url;
+    @FragmentArg
+    String url;
 
-    @ViewById ImageView cacheStatusImageView;
-    @ViewById VideoView videoView;
-    @ViewById ProgressBar progressBar;
+    @ViewById
+    ImageView cacheStatusImageView;
+    @ViewById
+    VideoView videoView;
+    @ViewById
+    SeekBar progressBar;
 
     private final VideoProgressUpdater updater = new VideoProgressUpdater();
 

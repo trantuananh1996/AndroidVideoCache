@@ -60,7 +60,7 @@ dependencies {
     implementation project(':library')
     testImplementation 'org.slf4j:slf4j-simple:1.7.21'
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.robolectric:robolectric:3.3.2'
+    testImplementation 'org.robolectric:robolectric:4.2.1'
     testImplementation 'com.squareup:fest-android:1.0.0'
     testImplementation 'com.google.guava:guava-jdk5:17.0'
     testImplementation('com.danikula:android-garden:2.1.4') {
